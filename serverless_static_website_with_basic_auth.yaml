@@ -192,10 +192,6 @@ Outputs:
   ServerlessWebsiteBucketName:
     Description: The name of the S3 bucket which contains the static website content
     Value: !Ref ServerlessWebsiteBucket
-    Export:
-      Name: ServerlessWebsiteBucketName
   ServerlessWebsiteDistributionId:
     Description: The ID of the CloudFront distribution serving the static website content from the dedicated S3 Bucket
     Value: !Ref ServerlessWebsiteDistribution
-    Export:
-      Name: ServerlessWebsiteDistributionId
