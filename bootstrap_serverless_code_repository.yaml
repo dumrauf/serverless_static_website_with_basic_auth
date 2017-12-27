@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Serverless Code Repository
+Resources:
+  ServerlessCodeRepositoryBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: "Private"
+
+  ServerlessCodeRepositoryBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket:
+        Ref: "ServerlessCodeRepositoryBucket"
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - "s3:PutObject"
+            Effect: "Deny"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  -
+                    Ref: "ServerlessCodeRepositoryBucket"
+                  - "/*"
+            Principal: "*"
+            Condition:
+              StringNotEquals:
+                s3:x-amz-server-side-encryption: "AES256"
+          -
+            Action:
+              - "s3:PutObject"
+            Effect: "Deny"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  -
+                    Ref: "ServerlessCodeRepositoryBucket"
+                  - "/*"
+            Principal: "*"
+            Condition:
+              "Null":
+                s3:x-amz-server-side-encryption: "true"
+
+
+Outputs:
+  ServerlessCodeRepositoryBucketName:
+    Description: The name of the bucket containing the serverless code
+    Value: !Ref ServerlessCodeRepositoryBucket
+    Export:
+      Name: ServerlessCodeRepositoryBucketName

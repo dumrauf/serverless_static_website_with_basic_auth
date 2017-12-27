@@ -1,0 +1,201 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Serverless Static Website with Basic Auth
+Parameters:
+  ServerlessWebsiteHostedZoneId:
+    Type: String
+    Description: ID of the Route 53 hosted zone to use
+  ServerlessWebsiteSubdomainName:
+    Type: String
+    Description: Name of the subdomain to create in Route 53
+  ServerlessWebsiteDomainName:
+    Type: String
+    Description: Name of the domain to use in Route 53
+  ServerlessWebsiteAcmCertificateArn:
+    Type: String
+    Description: The ARN of the ACM certificate to use for the CloudFront distribution (must match a superset of the
+                 subdomain.domain to be created in Route 53)
+Resources:
+  BasicAuthAtEdgeLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs6.10
+      CodeUri: lambda-at-edge-code
+      Description: Serverless Basic Auth @Edge Lambda
+      MemorySize: 128
+      Timeout: 1
+      Role: !GetAtt [LambdaExecutionRole, Arn]
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/service/"
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:*
+            Resource: arn:aws:logs:*:*:*
+  
+  BasicAuthAtEdgeLambdaVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref BasicAuthAtEdgeLambda
+      Description: Basic Auth@Edge Version
+
+
+
+
+  ServerlessWebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: "Private"
+
+  ServerlessWebsiteBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref ServerlessWebsiteBucket
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - "s3:PutObject"
+            Effect: "Deny"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  - !Ref ServerlessWebsiteBucket
+                  - "/*"
+            Principal: "*"
+            Condition:
+              StringNotEquals:
+                s3:x-amz-server-side-encryption: "AES256"
+          -
+            Action:
+              - "s3:PutObject"
+            Effect: "Deny"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  - !Ref ServerlessWebsiteBucket
+                  - "/*"
+            Principal: "*"
+            Condition:
+              "Null":
+                s3:x-amz-server-side-encryption: "true"
+          -
+            Action:
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  - !Ref ServerlessWebsiteBucket
+                  - "/*"
+            Principal:
+              AWS: !Sub
+                      - "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${cfoai}"
+                      - {cfoai: !Ref CloudFrontOriginAccessIdentity}
+
+  CloudFrontOriginAccessIdentity:
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: Origin Access Identity for Serverless Static Website with Basic Auth
+
+
+
+
+  ServerlessWebsiteDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      Tags:
+        -
+          Key: Name
+          Value: !Sub
+                    - "Hosted Zone for Serverless ${domain}"
+                    - {domain: !Ref ServerlessWebsiteDomainName}
+      DistributionConfig:
+        Aliases:
+        - !Sub
+          - "${subdomain}.${domain}"
+          - {subdomain: !Ref ServerlessWebsiteSubdomainName, domain: !Ref ServerlessWebsiteDomainName}
+        Origins:
+        - DomainName: !GetAtt [ServerlessWebsiteBucket, DomainName]
+          Id: s3Origin
+          S3OriginConfig:
+            OriginAccessIdentity: !Sub
+                                    - origin-access-identity/cloudfront/${cfoai}
+                                    - {cfoai: !Ref CloudFrontOriginAccessIdentity}
+        Enabled: 'true'
+        Comment: Serverless Static Website with Basic Auth from S3 Origin
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          TargetOriginId: s3Origin
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          LambdaFunctionAssociations:
+            -
+              EventType: viewer-request
+              LambdaFunctionARN: !Ref BasicAuthAtEdgeLambdaVersion
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref ServerlessWebsiteAcmCertificateArn
+          SslSupportMethod: sni-only
+
+
+
+
+  ServerlessWebsiteRecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref ServerlessWebsiteHostedZoneId
+      RecordSets:
+      - Name: !Sub
+               - "${subdomain}.${domain}"
+               - {subdomain: !Ref ServerlessWebsiteSubdomainName, domain: !Ref ServerlessWebsiteDomainName}
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2
+          DNSName: !GetAtt [ServerlessWebsiteDistribution, DomainName]
+
+
+
+
+Outputs:
+  ServerlessWebsiteBucketName:
+    Description: The name of the S3 bucket which contains the static website content
+    Value: !Ref ServerlessWebsiteBucket
+    Export:
+      Name: ServerlessWebsiteBucketName
+  ServerlessWebsiteDistributionId:
+    Description: The ID of the CloudFront distribution serving the static website content from the dedicated S3 Bucket
+    Value: !Ref ServerlessWebsiteDistribution
+    Export:
+      Name: ServerlessWebsiteDistributionId
