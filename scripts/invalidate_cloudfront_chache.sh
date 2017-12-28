@@ -20,7 +20,7 @@ INVALIDATION_PATHS="${@:2}"
 SERVERLESS_WEBSITE_DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name ${SERVERLESS_WEBSITE_WITH_BASIC_AUTH_STACK_NAME} \
                                                                         --region ${REGION} \
                                                                         --profile ${PROFILE} \
-                                                                        --query "Stacks[*].Outputs[?OutputKey == '${SERVERLESS_WEBSITE_BUCKET_NAME}'].OutputValue | [] | [0]" \
+                                                                        --query "Stacks[*].Outputs[?OutputKey == '${SERVERLESS_WEBSITE_DISTRIBUTION_ID}'].OutputValue | [] | [0]" \
                                                                         --output text)
 
 
