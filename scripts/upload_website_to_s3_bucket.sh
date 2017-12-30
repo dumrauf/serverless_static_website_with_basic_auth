@@ -4,12 +4,13 @@ set -e
 
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <website-directory> <profile>"
-    echo 'Example: $0 "test-website/" default'
+    echo 'Example: $0 "../static-website-content/" default'
     exit -1
 fi
 
 
-source _configuration.sh
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "${BASE_DIR}/_configuration.sh"
 WEBSITE_DIRECTORY=$1
 PROFILE=$2
 

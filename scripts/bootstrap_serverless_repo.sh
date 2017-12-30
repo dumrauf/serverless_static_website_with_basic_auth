@@ -8,7 +8,8 @@ if [ "$#" -ne 1 ]; then
 fi
 
 
-source _configuration.sh
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "${BASE_DIR}/_configuration.sh"
 PROFILE=$1
 
 

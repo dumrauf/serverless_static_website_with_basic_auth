@@ -19,8 +19,11 @@ ACM_CERTIFICATE_ARN=$5
 PROFILE=$6
 
 
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
 echo "---------- CREATING/UPDATING SERVERLESS CODE REPOSITORY ----------"
-./bootstrap_serverless_repo.sh "${PROFILE}"
+"${BASE_DIR}/bootstrap_serverless_repo.sh" "${PROFILE}"
 echo "------------------------------------------------------------------"
 echo
 echo
@@ -28,7 +31,7 @@ echo
 
 
 echo "--------------- CREATING SERVERLESS INFRASTRUCTURE ---------------"
-./create_serverless_infrastructure.sh "${SUBDOMAIN}" "${DOMAIN}" "${SERVERLESS_WEBSITE_HOSTED_ZONE_ID}" "${ACM_CERTIFICATE_ARN}" "${PROFILE}"
+"${BASE_DIR}/create_serverless_infrastructure.sh" "${SUBDOMAIN}" "${DOMAIN}" "${SERVERLESS_WEBSITE_HOSTED_ZONE_ID}" "${ACM_CERTIFICATE_ARN}" "${PROFILE}"
 echo "------------------------------------------------------------------"
 echo
 echo
@@ -36,5 +39,5 @@ echo
 
 
 echo "--------------------- UPLOADING TO S3 BUCKET ---------------------"
-./upload_website_to_s3_bucket.sh "${WEBSITE_DIRECTORY}" "${PROFILE}"
+"${BASE_DIR}/upload_website_to_s3_bucket.sh" "${WEBSITE_DIRECTORY}" "${PROFILE}"
 echo "------------------------------------------------------------------"
