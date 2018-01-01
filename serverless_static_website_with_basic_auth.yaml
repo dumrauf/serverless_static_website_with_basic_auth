@@ -154,6 +154,10 @@ Resources:
           AllowedMethods:
           - GET
           - HEAD
+          Compress: true
+          DefaultTTL: 16070400
+          MaxTTL: 31536000
+          MinTTL: 2678400
           TargetOriginId: s3Origin
           ForwardedValues:
             QueryString: 'false'
