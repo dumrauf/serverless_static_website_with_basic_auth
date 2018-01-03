@@ -192,6 +192,51 @@ Resources:
 
 
 
+  ServerlessWebsiteAdministratorUserPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "Policy for uploading objects to S3 bucket and invalidating CloudFront distribution"
+      Path: "/service/"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Action:
+              - "s3:ListBucket"
+              - "s3:PutObject"
+              - "s3:PutObjectAcl"
+              - "s3:DeleteObject"
+            Effect: Allow
+            Resource:
+              -
+                Fn::Join:
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    - !Ref ServerlessWebsiteBucket
+              -
+                Fn::Join:
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    - !Ref ServerlessWebsiteBucket
+                    - "/*"
+          -
+            Action:
+              - "cloudfront:CreateInvalidation"
+            Effect: Allow
+            Resource: "*"
+
+  ServerlessWebsiteAdministratorUser:
+    Type: AWS::IAM::User
+    Properties:
+      Path: "/service/"
+      ManagedPolicyArns:
+        - !Ref ServerlessWebsiteAdministratorUserPolicy
+
+
+
+
 Outputs:
   ServerlessWebsiteBucketName:
     Description: The name of the S3 bucket which contains the static website content
