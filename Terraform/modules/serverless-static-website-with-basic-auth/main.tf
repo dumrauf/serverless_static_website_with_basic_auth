@@ -59,6 +59,11 @@ resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
   memory_size      = 128
   timeout          = 1
   publish          = true
+
+  tags {
+    terraform                               = "true"
+    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
+  }
 }
 
 resource "aws_s3_bucket" "serverless_website_bucket" {
@@ -74,7 +79,8 @@ resource "aws_s3_bucket" "serverless_website_bucket" {
   }
 
   tags {
-    terraform = "true"
+    terraform                               = "true"
+    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
   }
 
   force_destroy = true
@@ -171,7 +177,8 @@ resource "aws_s3_bucket" "serverless_website_log_bucket" {
   }
 
   tags {
-    terraform = "true"
+    terraform                               = "true"
+    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
   }
 
   force_destroy = true
@@ -246,7 +253,8 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   }
 
   tags {
-    name = "${var.domain_name}"
+    terraform                               = "true"
+    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
   }
 }
 
