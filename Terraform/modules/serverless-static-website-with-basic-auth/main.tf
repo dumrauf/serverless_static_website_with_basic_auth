@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "lambda_execution_role_policy_document" {
 }
 
 resource "aws_iam_role" "lambda_execution_role" {
-  name_prefix = "${var.region}-lambda_execution_role-"
+  name = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role"
 
   assume_role_policy = "${data.aws_iam_policy_document.lambda_execution_role_assume_role_policy_document.json}"
   path               = "/service/"
@@ -37,7 +37,7 @@ resource "aws_iam_role" "lambda_execution_role" {
 }
 
 resource "aws_iam_role_policy" "lambda_execution_role_policy" {
-  name   = "lambda_execution_role_policy_document"
+  name   = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role_policy_document"
   role   = "${aws_iam_role.lambda_execution_role.id}"
   policy = "${data.aws_iam_policy_document.lambda_execution_role_policy_document.json}"
 }
@@ -50,7 +50,7 @@ data "archive_file" "basic_auth_at_edge_lambda_package" {
 
 resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
   filename         = "${var.lambda_at_edge_code_artefacts_directory}/${var.lambda_at_edge_code_package_name}"
-  function_name    = "BasicAuthAtEdgeLambda-${random_string.something.result}"
+  function_name    = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda"
   role             = "${aws_iam_role.lambda_execution_role.arn}"
   handler          = "index.handler"
   source_code_hash = "${data.archive_file.basic_auth_at_edge_lambda_package.output_base64sha256}"
@@ -62,7 +62,7 @@ resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
 }
 
 resource "aws_s3_bucket" "serverless_website_bucket" {
-  bucket_prefix = "serverless-website-bucket-"
+  bucket_prefix = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---"
   acl           = "private"
 
   server_side_encryption_configuration {
@@ -271,13 +271,13 @@ data "aws_iam_policy_document" "serverless_website_administrator_user_policy_doc
 
 resource "aws_iam_policy" "serverless_website_administrator_user_policy" {
   description = "${var.subdomain_name}.${var.domain_name} - Policy for uploading objects to S3 bucket and invalidating CloudFront distribution"
-  name_prefix = "${var.region}-ServerlessWebsiteAdministrator-"
+  name        = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministratorUserPolicy"
   path        = "/service/"
   policy      = "${data.aws_iam_policy_document.serverless_website_administrator_user_policy_document.json}"
 }
 
 resource "aws_iam_user" "serverless_website_administrator_user" {
-  name = "ServerlessWebsiteAdministratorUser"
+  name = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministrator"
   path = "/service/"
 }
 
