@@ -82,6 +82,7 @@ resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
 }
 
 locals {
+  # Workaround for https://github.com/hashicorp/terraform/issues/15751
   serverless_website_bucket_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}"
 }
 
@@ -184,6 +185,7 @@ resource "aws_s3_bucket_policy" "serverless_website_bucket_policy" {
 }
 
 locals {
+  # Workaround for https://github.com/hashicorp/terraform/issues/15751
   serverless_website_log_bucket_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}"
 }
 
