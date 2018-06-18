@@ -184,14 +184,12 @@ resource "aws_s3_bucket_policy" "serverless_website_bucket_policy" {
   policy = "${data.aws_iam_policy_document.serverless_website_bucket_policy.json}"
 }
 
-locals {
-  # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  serverless_website_log_bucket_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}"
-}
-
+######################################################################################
+# Comment out in order to avoid creation when providing a 'logging_bucket_domain_name'
+######################################################################################
 resource "aws_s3_bucket" "serverless_website_log_bucket" {
-  bucket = "${substr(local.serverless_website_log_bucket_name, 0, min(57, length(local.serverless_website_log_bucket_name)))}---logs"
-  acl    = "log-delivery-write"
+  bucket_prefix = "${var.logging_bucket_prefix}"
+  acl           = "log-delivery-write"
 
   server_side_encryption_configuration {
     rule {
@@ -202,11 +200,9 @@ resource "aws_s3_bucket" "serverless_website_log_bucket" {
   }
 
   tags {
-    terraform                               = "true"
-    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
+    terraform  = "true"
+    log-bucket = "true"
   }
-
-  force_destroy = true
 }
 
 resource "aws_cloudfront_distribution" "serverless_website_distribution" {
@@ -222,7 +218,8 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   }
 
   logging_config {
-    bucket          = "${aws_s3_bucket.serverless_website_log_bucket.bucket_domain_name}"
+    bucket = "${var.logging_bucket_domain_name == "" ? aws_s3_bucket.serverless_website_log_bucket.bucket_domain_name : var.logging_bucket_domain_name}"
+
     prefix          = "${var.subdomain_name}.${var.domain_name}/"
     include_cookies = true
   }

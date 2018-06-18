@@ -11,3 +11,7 @@ subdomain_name = "<your-subdomain>"
 domain_name = "<your-domain>"
 
 acm_certificate_arn = "<your-acm-certificate-arn>"
+
+logging_bucket_prefix = "serverless-static-website-logs-"
+
+logging_bucket_domain_name = ""
