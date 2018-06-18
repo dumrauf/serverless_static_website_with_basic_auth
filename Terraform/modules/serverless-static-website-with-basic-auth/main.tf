@@ -28,16 +28,26 @@ data "aws_iam_policy_document" "lambda_execution_role_policy_document" {
   }
 }
 
+locals {
+  # Workaround for https://github.com/hashicorp/terraform/issues/15751
+  lambda_execution_role_name = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role"
+}
+
 resource "aws_iam_role" "lambda_execution_role" {
-  name = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role"
+  name = "${substr(local.lambda_execution_role_name, 0, min(64, length(local.lambda_execution_role_name)))}"
 
   assume_role_policy = "${data.aws_iam_policy_document.lambda_execution_role_assume_role_policy_document.json}"
   path               = "/service/"
   description        = "${var.subdomain_name}.${var.domain_name} - Basic Auth @Edge Lambda Execution Role"
 }
 
+locals {
+  # Workaround for https://github.com/hashicorp/terraform/issues/15751
+  lambda_execution_role_policy_name = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role_policy_document"
+}
+
 resource "aws_iam_role_policy" "lambda_execution_role_policy" {
-  name   = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role_policy_document"
+  name   = "${substr(local.lambda_execution_role_policy_name, 0, min(128, length(local.lambda_execution_role_policy_name)))}"
   role   = "${aws_iam_role.lambda_execution_role.id}"
   policy = "${data.aws_iam_policy_document.lambda_execution_role_policy_document.json}"
 }
@@ -48,9 +58,14 @@ data "archive_file" "basic_auth_at_edge_lambda_package" {
   output_path = "${var.lambda_at_edge_code_artefacts_directory}/${var.lambda_at_edge_code_package_name}"
 }
 
+locals {
+  # Workaround for https://github.com/hashicorp/terraform/issues/15751
+  basic_auth_at_edge_lambda_function_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda"
+}
+
 resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
   filename         = "${var.lambda_at_edge_code_artefacts_directory}/${var.lambda_at_edge_code_package_name}"
-  function_name    = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda"
+  function_name    = "${substr(local.basic_auth_at_edge_lambda_function_name, 0, min(64, length(local.basic_auth_at_edge_lambda_function_name)))}"
   role             = "${aws_iam_role.lambda_execution_role.arn}"
   handler          = "index.handler"
   source_code_hash = "${data.archive_file.basic_auth_at_edge_lambda_package.output_base64sha256}"
@@ -66,9 +81,13 @@ resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
   }
 }
 
+locals {
+  serverless_website_bucket_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}"
+}
+
 resource "aws_s3_bucket" "serverless_website_bucket" {
-  bucket_prefix = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---"
-  acl           = "private"
+  bucket = "${substr(local.serverless_website_bucket_name, 0, min(53, length(local.serverless_website_bucket_name)))}---contents"
+  acl    = "private"
 
   server_side_encryption_configuration {
     rule {
@@ -164,9 +183,13 @@ resource "aws_s3_bucket_policy" "serverless_website_bucket_policy" {
   policy = "${data.aws_iam_policy_document.serverless_website_bucket_policy.json}"
 }
 
+locals {
+  serverless_website_log_bucket_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}"
+}
+
 resource "aws_s3_bucket" "serverless_website_log_bucket" {
-  bucket_prefix = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---logs-"
-  acl           = "log-delivery-write"
+  bucket = "${substr(local.serverless_website_log_bucket_name, 0, min(57, length(local.serverless_website_log_bucket_name)))}---logs"
+  acl    = "log-delivery-write"
 
   server_side_encryption_configuration {
     rule {
@@ -302,15 +325,25 @@ data "aws_iam_policy_document" "serverless_website_administrator_user_policy_doc
   }
 }
 
+locals {
+  # Workaround for https://github.com/hashicorp/terraform/issues/15751
+  serverless_website_administrator_user_policy_name = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministratorUserPolicy"
+}
+
 resource "aws_iam_policy" "serverless_website_administrator_user_policy" {
   description = "${var.subdomain_name}.${var.domain_name} - Policy for uploading objects to S3 bucket and invalidating CloudFront distribution"
-  name        = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministratorUserPolicy"
+  name        = "${substr(local.serverless_website_administrator_user_policy_name, 0, min(128, length(local.serverless_website_administrator_user_policy_name)))}"
   path        = "/service/"
   policy      = "${data.aws_iam_policy_document.serverless_website_administrator_user_policy_document.json}"
 }
 
+locals {
+  # Workaround for https://github.com/hashicorp/terraform/issues/15751
+  serverless_website_administrator_user_name = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministrator"
+}
+
 resource "aws_iam_user" "serverless_website_administrator_user" {
-  name = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministrator"
+  name = "${substr(local.serverless_website_administrator_user_name, 0, min(64, length(local.serverless_website_administrator_user_name)))}"
   path = "/service/"
 }
 
