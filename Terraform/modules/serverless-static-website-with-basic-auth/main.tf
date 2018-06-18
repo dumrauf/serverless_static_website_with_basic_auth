@@ -185,10 +185,10 @@ resource "aws_s3_bucket_policy" "serverless_website_bucket_policy" {
 }
 
 ######################################################################################
-# Comment out in order to avoid creation when providing a 'logging_bucket_domain_name'
+# Comment out in order to avoid creation when providing a 'log_bucket_domain_name'
 ######################################################################################
 resource "aws_s3_bucket" "serverless_website_log_bucket" {
-  bucket_prefix = "${var.logging_bucket_prefix}"
+  bucket_prefix = "${var.log_bucket_prefix}"
   acl           = "log-delivery-write"
 
   server_side_encryption_configuration {
@@ -218,7 +218,7 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   }
 
   logging_config {
-    bucket = "${var.logging_bucket_domain_name == "" ? aws_s3_bucket.serverless_website_log_bucket.bucket_domain_name : var.logging_bucket_domain_name}"
+    bucket = "${var.log_bucket_domain_name == "" ? aws_s3_bucket.serverless_website_log_bucket.bucket_domain_name : var.log_bucket_domain_name}"
 
     prefix          = "${var.subdomain_name}.${var.domain_name}/"
     include_cookies = true

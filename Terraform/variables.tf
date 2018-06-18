@@ -27,12 +27,12 @@ variable "acm_certificate_arn" {
   description = "The ARN of the certificate in the ACM to use for the serverless website"
 }
 
-variable "logging_bucket_prefix" {
+variable "log_bucket_prefix" {
   description = "Bucket prefix to use when creating a new S3 bucket for storing CloudFront access logs"
   default     = "serverless-static-website-logs-"
 }
 
-variable "logging_bucket_domain_name" {
+variable "log_bucket_domain_name" {
   description = "Domain name of the S3 bucket to use for storing CloudFront access logs"
   default     = ""
 }
