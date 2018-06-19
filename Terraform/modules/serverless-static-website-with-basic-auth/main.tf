@@ -1,5 +1,5 @@
-resource "random_string" "something" {
-  length  = 8
+resource "random_string" "tiny" {
+  length  = 2
   special = false
 }
 
@@ -60,7 +60,7 @@ data "archive_file" "basic_auth_at_edge_lambda_package" {
 
 locals {
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  basic_auth_at_edge_lambda_function_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda"
+  basic_auth_at_edge_lambda_function_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda-${random_string.tiny.result}"
 }
 
 resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
