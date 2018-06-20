@@ -26,7 +26,7 @@ variable "acm_certificate_arn" {
 
 variable "log_bucket_prefix" {
   type        = "string"
-  description = "Bucket prefix to use when creating a new S3 bucket for storing CloudFront access logs"
+  description = "Bucket prefix to use when creating a new S3 bucket for storing CloudFront access logs (ignored when providing 'log_bucket_domain_name')"
   default     = "serverless-static-website-logs-"
 }
 
