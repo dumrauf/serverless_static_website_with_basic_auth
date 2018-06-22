@@ -3,7 +3,7 @@
 
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 <workspace-name>"
-    echo "Example: $0 static.example.com"
+    echo "Example: $0 static-website.example.com"
     exit -1
 fi
 

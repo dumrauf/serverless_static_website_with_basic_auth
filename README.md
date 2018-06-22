@@ -88,7 +88,7 @@ creating and uploaded the resources as indicated by the corresponding name.
 
 #### Terraform
 
-As for Terraform, the input variables are definied in `settings/serverless_static_website_with_basic_auth.tfvars` as
+As for Terraform, the input variables for the example website `static-website.example.com` are definied in `settings/static-website.example.com.tfvars` as
 ```hcl
 region = "us-east-1"
 
@@ -98,9 +98,9 @@ profile = "default"
 
 hosted_zone_id = "Z23ABC4XYZL05B"
 
-subdomain_name = "static-website"
+subdomain_name = "static"
 
-domain_name = "mydomain.uk"
+domain_name = "example.com"
 
 acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
 ```
@@ -110,11 +110,11 @@ With the Terraform configuration done, the entire serverless infrastructure can 
 ```
 scripts/create_static_serverless_website.sh  <website-directory>  <profile>  <workspace-name>
 ```
-Here, the `<workspace-name>` has to match the name of the input variables file in `settings/` when neglecting the `.tfvars` extension (in this case `serverless_static_website_with_basic_auth`)
+Here, the `<workspace-name>` has to match the name of the input variables file in `settings/` when neglecting the `.tfvars` extension (in this case `static-website.example.com`)
 
 An example invocation may look like
 ```
-scripts/create_static_serverless_website.sh  static-website-content/  default  serverless_static_website_with_basic_auth
+scripts/create_static_serverless_website.sh  static-website-content/  default  static-website.example.com
 ```
 Note that you need to replace the example values with yours in order for the script to work.
 

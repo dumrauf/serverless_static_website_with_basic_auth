@@ -6,7 +6,7 @@ profile = "<your-profile>"
 
 hosted_zone_id = "<your-hosted-zone-id>"
 
-subdomain_name = "static"
+subdomain_name = "static-website"
 
 domain_name = "example.com"
 
