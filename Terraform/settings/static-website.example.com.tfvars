@@ -12,6 +12,4 @@ domain_name = "example.com"
 
 acm_certificate_arn = "<your-acm-certificate-arn>"
 
-log_bucket_prefix = "serverless-static-website-logs-"
-
-log_bucket_domain_name = ""
+log_bucket_domain_name = "<your-log-bucket-domain>"
