@@ -52,19 +52,21 @@ resource "aws_iam_role_policy" "lambda_execution_role_policy" {
   policy = "${data.aws_iam_policy_document.lambda_execution_role_policy_document.json}"
 }
 
-data "archive_file" "basic_auth_at_edge_lambda_package" {
-  type        = "zip"
-  source_dir  = "${path.module}/../../../lambda-at-edge-code/"
-  output_path = "${var.lambda_at_edge_code_artefacts_directory}/${var.lambda_at_edge_code_package_name}"
-}
-
 locals {
+  basic_auth_at_edge_lambda_package_output_path = "${var.lambda_at_edge_code_artefacts_directory}/${var.subdomain_name}.${var.domain_name}---${var.lambda_at_edge_code_package_name}.zip"
+
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
   basic_auth_at_edge_lambda_function_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda-${random_string.tiny.result}"
 }
 
+data "archive_file" "basic_auth_at_edge_lambda_package" {
+  type        = "zip"
+  source_dir  = "${path.root}/lambda-at-edge-code/${var.subdomain_name}.${var.domain_name}/"
+  output_path = "${local.basic_auth_at_edge_lambda_package_output_path}"
+}
+
 resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
-  filename         = "${var.lambda_at_edge_code_artefacts_directory}/${var.lambda_at_edge_code_package_name}"
+  filename         = "${local.basic_auth_at_edge_lambda_package_output_path}"
   function_name    = "${substr(local.basic_auth_at_edge_lambda_function_name, 0, min(64, length(local.basic_auth_at_edge_lambda_function_name)))}"
   role             = "${aws_iam_role.lambda_execution_role.arn}"
   handler          = "index.handler"

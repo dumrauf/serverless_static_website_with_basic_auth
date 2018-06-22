@@ -39,7 +39,7 @@ variable "log_bucket_domain_name" {
 variable "lambda_at_edge_code_package_name" {
   type        = "string"
   description = "The name to use for the lambda@Edge code package"
-  default     = "lambda_at_edge_code_package.zip"
+  default     = "lambda-at-edge-code-package"
 }
 
 variable "lambda_at_edge_code_artefacts_directory" {
