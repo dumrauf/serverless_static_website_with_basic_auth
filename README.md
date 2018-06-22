@@ -16,6 +16,7 @@ Before you can use the tools in this repository out of the box, you need
  - an [AWS CLI](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) configured to work with your AWS account
  - a [domain registered with Route 53](http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html)
  - an [ACM certificate](http://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request.html) for the subdomain you want to publish your static website at
+ - a [log bucket](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html#access-logs-choosing-s3-bucket) which can be used to store [CloudFront access logs](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html) (use the Terraform module provided in [https://github.com/dumrauf/aws_log_bucket](https://github.com/dumrauf/aws_log_bucket) to create a log bucket if needed) 
 
  If Terraform is the tool of choice then you also need
  - a [Terraform](https://www.terraform.io/intro/getting-started/install.html) CLI
@@ -88,7 +89,7 @@ creating and uploaded the resources as indicated by the corresponding name.
 
 #### Terraform
 
-As for Terraform, the input variables for the example website `static-website.example.com` are definied in `settings/static-website.example.com.tfvars` as
+As for Terraform, the input variables for the example website `static-website.example.com` are definied in [`Terraform/settings/static-website.example.com.tfvars`](Terraform/settings/static-website.example.com.tfvars) as
 ```hcl
 region = "us-east-1"
 
@@ -103,6 +104,8 @@ subdomain_name = "static"
 domain_name = "example.com"
 
 acm_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+
+log_bucket_domain_name = "<your-log-bucket-domain>"
 ```
 Note that you need to replace the example values with yours in order for Terraform to work.
 
