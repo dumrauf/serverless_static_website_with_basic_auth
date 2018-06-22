@@ -6,7 +6,7 @@ set -e
 
 if [ "$#" -ne 3 ]; then
     echo "Usage: $0 <website-directory> <aws-profile> <workspace-name>"
-    echo "Example: $0" '"../static-website-content/" default serverless_static_website_with_basic_auth'
+    echo "Example: $0" '"../static-website-content/" default static.example.com'
     exit -1
 fi
 

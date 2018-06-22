@@ -6,9 +6,9 @@ profile = "<your-profile>"
 
 hosted_zone_id = "<your-hosted-zone-id>"
 
-subdomain_name = "<your-subdomain>"
+subdomain_name = "static"
 
-domain_name = "<your-domain>"
+domain_name = "example.com"
 
 acm_certificate_arn = "<your-acm-certificate-arn>"
 
