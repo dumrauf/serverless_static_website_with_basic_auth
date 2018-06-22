@@ -24,15 +24,9 @@ variable "acm_certificate_arn" {
   description = "The ARN of the ACM certificate to use for the CloudFront distribution (must match a superset of the subdomain.domain to be created in Route 53)"
 }
 
-variable "log_bucket_prefix" {
-  type        = "string"
-  description = "Bucket prefix to use when creating a new S3 bucket for storing CloudFront access logs (ignored when providing 'log_bucket_domain_name')"
-  default     = "serverless-static-website-logs-"
-}
-
 variable "log_bucket_domain_name" {
   type        = "string"
-  description = "Domain name of the S3 bucket to use for storing CloudFront access logs (leave empty to create new logging bucket or provide in order to use instead of newly created logging bucket)"
+  description = "Domain name of the S3 bucket to use for storing CloudFront access logs"
   default     = ""
 }
 

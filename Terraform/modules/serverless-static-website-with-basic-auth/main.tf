@@ -186,27 +186,6 @@ resource "aws_s3_bucket_policy" "serverless_website_bucket_policy" {
   policy = "${data.aws_iam_policy_document.serverless_website_bucket_policy.json}"
 }
 
-######################################################################################
-# Comment out in order to avoid creation when providing a 'log_bucket_domain_name'
-######################################################################################
-resource "aws_s3_bucket" "serverless_website_log_bucket" {
-  bucket_prefix = "${var.log_bucket_prefix}"
-  acl           = "log-delivery-write"
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-
-  tags {
-    terraform  = "true"
-    log-bucket = "true"
-  }
-}
-
 resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   aliases = ["${var.subdomain_name}.${var.domain_name}"]
 
@@ -220,7 +199,7 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   }
 
   logging_config {
-    bucket = "${var.log_bucket_domain_name == "" ? aws_s3_bucket.serverless_website_log_bucket.bucket_domain_name : var.log_bucket_domain_name}"
+    bucket = "${var.log_bucket_domain_name}"
 
     prefix          = "${var.subdomain_name}.${var.domain_name}/"
     include_cookies = true
