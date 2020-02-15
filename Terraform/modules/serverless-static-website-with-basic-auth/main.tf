@@ -83,7 +83,7 @@ resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
   role             = aws_iam_role.lambda_execution_role.arn
   handler          = "index.handler"
   source_code_hash = data.archive_file.basic_auth_at_edge_lambda_package.output_base64sha256
-  runtime          = "nodejs6.10"
+  runtime          = "nodejs12.x"
   description      = "${var.subdomain_name}.${var.domain_name} - Basic Auth @Edge Lambda"
   memory_size      = 128
   timeout          = 1
