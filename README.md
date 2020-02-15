@@ -4,8 +4,8 @@
 This repository contains a collection of Bash scripts and a choice of either a Terraform module or a set of CloudFormation templates that build a serverless infrastructure in AWS to host a static website protected with [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
 The static website is published on a subdomain registered in Route 53.
 
-A live example can be found at [https://serverless-static-website-with-basic-auth.dumrauf.uk/](https://serverless-static-website-with-basic-auth.dumrauf.uk/?utm_source=GitHub&utm_medium=social&utm_campaign=README) using the demo username `guest` and password [`letmein`](https://www.theguardian.com/technology/2016/jan/20/123456-worst-passwords-revealed).
-Note that access to the underlying [S3 bucket](https://us-east-1-serverless-webs-serverlesswebsitebucket-1mtsv4odbs2x0.s3.amazonaws.com) hosting the static website is denied.
+> A live example can be found at [https://serverless-static-website-with-basic-auth.dumrauf.uk/](https://serverless-static-website-with-basic-auth.dumrauf.uk/?utm_source=GitHub&utm_medium=social&utm_campaign=README) using the demo username `guest` and password [`letmein`](https://www.theguardian.com/technology/2016/jan/20/123456-worst-passwords-revealed).
+> Note that access to the underlying [S3 bucket](https://us-east-1-serverless-webs-serverlesswebsitebucket-1mtsv4odbs2x0.s3.amazonaws.com) hosting the static website is denied.
 
 The master branch in this repository is compliant with [Terraform v0.12](https://www.terraform.io/upgrade-guides/0-12.html); a legacy version that is compatible with [Terraform v0.11](https://www.terraform.io/upgrade-guides/0-11.html) is available on branch [terraform@0.11](https://github.com/dumrauf/serverless_static_website_with_basic_auth/tree/terraform%400.11).
 
