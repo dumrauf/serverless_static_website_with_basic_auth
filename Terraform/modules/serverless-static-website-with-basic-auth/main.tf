@@ -221,7 +221,7 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
     include_cookies = true
   }
 
-  enabled             = "True"
+  enabled             = true
   comment             = "${var.subdomain_name}.${var.domain_name} - Serverless Static Website with Basic Auth from S3 Origin"
   default_root_object = "index.html"
 
