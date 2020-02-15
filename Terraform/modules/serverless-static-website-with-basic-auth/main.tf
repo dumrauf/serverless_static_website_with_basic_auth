@@ -29,8 +29,9 @@ data "aws_iam_policy_document" "lambda_execution_role_policy_document" {
 }
 
 locals {
-  fqdn            = "${var.subdomain_name}.${var.domain_name}"
-  fqdn_for_naming = "${var.subdomain_name}.${var.domain_name}---${random_string.tiny.result}"
+  fqdn                            = "${var.subdomain_name}.${var.domain_name}"
+  fqdn_for_naming                 = "${var.subdomain_name}.${var.domain_name}---${random_string.tiny.result}"
+  fqdn_dots_replaced_with_hyphens = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}"
 
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
   lambda_execution_role_name = "${local.fqdn_for_naming}---lambda_execution_role"
@@ -67,7 +68,7 @@ locals {
   basic_auth_at_edge_lambda_package_output_path = "${var.lambda_at_edge_code_artefacts_directory}/${local.fqdn}---${var.lambda_at_edge_code_package_name}.zip"
 
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  basic_auth_at_edge_lambda_function_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda-${random_string.tiny.result}"
+  basic_auth_at_edge_lambda_function_name = "${local.fqdn_dots_replaced_with_hyphens}---${random_string.tiny.result}---BasicAuthAtEdgeLambda"
 }
 
 data "archive_file" "basic_auth_at_edge_lambda_package" {
@@ -100,7 +101,7 @@ resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
 
 locals {
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  serverless_website_bucket_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}"
+  serverless_website_bucket_name = "${local.fqdn_dots_replaced_with_hyphens}"
 }
 
 resource "aws_s3_bucket" "serverless_website_bucket" {
