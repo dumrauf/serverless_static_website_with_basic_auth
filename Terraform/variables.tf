@@ -31,3 +31,4 @@ variable "log_bucket_domain_name" {
   description = "Domain name of the S3 bucket to use for storing CloudFront access logs"
   default     = ""
 }
+

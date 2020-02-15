@@ -10,14 +10,14 @@ resource "aws_s3_bucket" "serverless-code-repository-bucket" {
     }
   }
 
-  tags {
+  tags = {
     terraform = "true"
     module    = "serverless-code-repository-bucket"
   }
 }
 
 resource "aws_s3_bucket_policy" "serverless-code-repository-bucket-policy" {
-  bucket = "${aws_s3_bucket.serverless-code-repository-bucket.id}"
+  bucket = aws_s3_bucket.serverless-code-repository-bucket.id
 
   policy = <<POLICY
 {
@@ -48,4 +48,6 @@ resource "aws_s3_bucket_policy" "serverless-code-repository-bucket-policy" {
     ]
 }
 POLICY
+
 }
+

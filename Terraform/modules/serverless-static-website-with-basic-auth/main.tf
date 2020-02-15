@@ -34,9 +34,13 @@ locals {
 }
 
 resource "aws_iam_role" "lambda_execution_role" {
-  name = "${substr(local.lambda_execution_role_name, 0, min(64, length(local.lambda_execution_role_name)))}"
+  name = substr(
+    local.lambda_execution_role_name,
+    0,
+    min(64, length(local.lambda_execution_role_name)),
+  )
 
-  assume_role_policy = "${data.aws_iam_policy_document.lambda_execution_role_assume_role_policy_document.json}"
+  assume_role_policy = data.aws_iam_policy_document.lambda_execution_role_assume_role_policy_document.json
   path               = "/service/"
   description        = "${var.subdomain_name}.${var.domain_name} - Basic Auth @Edge Lambda Execution Role"
 }
@@ -47,9 +51,13 @@ locals {
 }
 
 resource "aws_iam_role_policy" "lambda_execution_role_policy" {
-  name   = "${substr(local.lambda_execution_role_policy_name, 0, min(128, length(local.lambda_execution_role_policy_name)))}"
-  role   = "${aws_iam_role.lambda_execution_role.id}"
-  policy = "${data.aws_iam_policy_document.lambda_execution_role_policy_document.json}"
+  name = substr(
+    local.lambda_execution_role_policy_name,
+    0,
+    min(128, length(local.lambda_execution_role_policy_name)),
+  )
+  role   = aws_iam_role.lambda_execution_role.id
+  policy = data.aws_iam_policy_document.lambda_execution_role_policy_document.json
 }
 
 locals {
@@ -62,22 +70,26 @@ locals {
 data "archive_file" "basic_auth_at_edge_lambda_package" {
   type        = "zip"
   source_dir  = "${path.root}/lambda-at-edge-code/${var.subdomain_name}.${var.domain_name}/"
-  output_path = "${local.basic_auth_at_edge_lambda_package_output_path}"
+  output_path = local.basic_auth_at_edge_lambda_package_output_path
 }
 
 resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
-  filename         = "${local.basic_auth_at_edge_lambda_package_output_path}"
-  function_name    = "${substr(local.basic_auth_at_edge_lambda_function_name, 0, min(64, length(local.basic_auth_at_edge_lambda_function_name)))}"
-  role             = "${aws_iam_role.lambda_execution_role.arn}"
+  filename = local.basic_auth_at_edge_lambda_package_output_path
+  function_name = substr(
+    local.basic_auth_at_edge_lambda_function_name,
+    0,
+    min(64, length(local.basic_auth_at_edge_lambda_function_name)),
+  )
+  role             = aws_iam_role.lambda_execution_role.arn
   handler          = "index.handler"
-  source_code_hash = "${data.archive_file.basic_auth_at_edge_lambda_package.output_base64sha256}"
+  source_code_hash = data.archive_file.basic_auth_at_edge_lambda_package.output_base64sha256
   runtime          = "nodejs6.10"
   description      = "${var.subdomain_name}.${var.domain_name} - Basic Auth @Edge Lambda"
   memory_size      = 128
   timeout          = 1
   publish          = true
 
-  tags {
+  tags = {
     terraform                               = "true"
     servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
   }
@@ -89,8 +101,12 @@ locals {
 }
 
 resource "aws_s3_bucket" "serverless_website_bucket" {
-  bucket = "${substr(local.serverless_website_bucket_name, 0, min(53, length(local.serverless_website_bucket_name)))}---contents"
-  acl    = "private"
+  bucket = "${substr(
+    local.serverless_website_bucket_name,
+    0,
+    min(53, length(local.serverless_website_bucket_name)),
+  )}---contents"
+  acl = "private"
 
   server_side_encryption_configuration {
     rule {
@@ -100,7 +116,7 @@ resource "aws_s3_bucket" "serverless_website_bucket" {
     }
   }
 
-  tags {
+  tags = {
     terraform                               = "true"
     servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
   }
@@ -160,7 +176,7 @@ data "aws_iam_policy_document" "serverless_website_bucket_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.cloudfront_origin_access_identity.iam_arn}"]
+      identifiers = [aws_cloudfront_origin_access_identity.cloudfront_origin_access_identity.iam_arn]
     }
 
     actions   = ["s3:GetObject"]
@@ -172,25 +188,25 @@ data "aws_iam_policy_document" "serverless_website_bucket_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.cloudfront_origin_access_identity.iam_arn}"]
+      identifiers = [aws_cloudfront_origin_access_identity.cloudfront_origin_access_identity.iam_arn]
     }
 
     actions   = ["s3:Listbucket"]
-    resources = ["${aws_s3_bucket.serverless_website_bucket.arn}"]
+    resources = [aws_s3_bucket.serverless_website_bucket.arn]
   }
 }
 
 resource "aws_s3_bucket_policy" "serverless_website_bucket_policy" {
-  bucket = "${aws_s3_bucket.serverless_website_bucket.id}"
+  bucket = aws_s3_bucket.serverless_website_bucket.id
 
-  policy = "${data.aws_iam_policy_document.serverless_website_bucket_policy.json}"
+  policy = data.aws_iam_policy_document.serverless_website_bucket_policy.json
 }
 
 resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   aliases = ["${var.subdomain_name}.${var.domain_name}"]
 
   origin {
-    domain_name = "${aws_s3_bucket.serverless_website_bucket.bucket_domain_name}"
+    domain_name = aws_s3_bucket.serverless_website_bucket.bucket_domain_name
     origin_id   = "s3Origin"
 
     s3_origin_config {
@@ -199,7 +215,7 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   }
 
   logging_config {
-    bucket = "${var.log_bucket_domain_name}"
+    bucket = var.log_bucket_domain_name
 
     prefix          = "${var.subdomain_name}.${var.domain_name}/"
     include_cookies = true
@@ -238,36 +254,36 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
 
     lambda_function_association {
       event_type = "viewer-request"
-      lambda_arn = "${aws_lambda_function.basic_auth_at_edge_lambda.qualified_arn}"
+      lambda_arn = aws_lambda_function.basic_auth_at_edge_lambda.qualified_arn
     }
   }
 
   price_class = "PriceClass_100"
 
-  restrictions = {
+  restrictions {
     geo_restriction {
       restriction_type = "none"
     }
   }
 
   viewer_certificate {
-    acm_certificate_arn = "${var.acm_certificate_arn}"
+    acm_certificate_arn = var.acm_certificate_arn
     ssl_support_method  = "sni-only"
   }
 
-  tags {
+  tags = {
     terraform                               = "true"
     servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
   }
 }
 
 resource "aws_route53_record" "serverless_website_recordset_group" {
-  zone_id = "${var.hosted_zone_id}"
+  zone_id = var.hosted_zone_id
   name    = "${var.subdomain_name}.${var.domain_name}"
   type    = "A"
 
   alias {
-    name                   = "${aws_cloudfront_distribution.serverless_website_distribution.domain_name}"
+    name                   = aws_cloudfront_distribution.serverless_website_distribution.domain_name
     zone_id                = "Z2FDTNDATAQYW2"
     evaluate_target_health = false
   }
@@ -289,7 +305,7 @@ data "aws_iam_policy_document" "serverless_website_administrator_user_policy_doc
       "s3:ListBucket",
     ]
 
-    resources = ["${aws_s3_bucket.serverless_website_bucket.arn}"]
+    resources = [aws_s3_bucket.serverless_website_bucket.arn]
   }
 
   statement {
@@ -312,9 +328,16 @@ locals {
 
 resource "aws_iam_policy" "serverless_website_administrator_user_policy" {
   description = "${var.subdomain_name}.${var.domain_name} - Policy for uploading objects to S3 bucket and invalidating CloudFront distribution"
-  name        = "${substr(local.serverless_website_administrator_user_policy_name, 0, min(128, length(local.serverless_website_administrator_user_policy_name)))}"
-  path        = "/service/"
-  policy      = "${data.aws_iam_policy_document.serverless_website_administrator_user_policy_document.json}"
+  name = substr(
+    local.serverless_website_administrator_user_policy_name,
+    0,
+    min(
+      128,
+      length(local.serverless_website_administrator_user_policy_name),
+    ),
+  )
+  path   = "/service/"
+  policy = data.aws_iam_policy_document.serverless_website_administrator_user_policy_document.json
 }
 
 locals {
@@ -323,11 +346,16 @@ locals {
 }
 
 resource "aws_iam_user" "serverless_website_administrator_user" {
-  name = "${substr(local.serverless_website_administrator_user_name, 0, min(64, length(local.serverless_website_administrator_user_name)))}"
+  name = substr(
+    local.serverless_website_administrator_user_name,
+    0,
+    min(64, length(local.serverless_website_administrator_user_name)),
+  )
   path = "/service/"
 }
 
 resource "aws_iam_user_policy_attachment" "serverless_website_administrator_user_policy_attachment" {
-  user       = "${aws_iam_user.serverless_website_administrator_user.name}"
-  policy_arn = "${aws_iam_policy.serverless_website_administrator_user_policy.arn}"
+  user       = aws_iam_user.serverless_website_administrator_user.name
+  policy_arn = aws_iam_policy.serverless_website_administrator_user_policy.arn
 }
+
