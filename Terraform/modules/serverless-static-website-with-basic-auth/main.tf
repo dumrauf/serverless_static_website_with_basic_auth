@@ -29,8 +29,11 @@ data "aws_iam_policy_document" "lambda_execution_role_policy_document" {
 }
 
 locals {
+  fqdn            = "${var.subdomain_name}.${var.domain_name}"
+  fqdn_for_naming = "${var.subdomain_name}.${var.domain_name}---${random_string.tiny.result}"
+
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  lambda_execution_role_name = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role"
+  lambda_execution_role_name = "${local.fqdn_for_naming}---lambda_execution_role"
 }
 
 resource "aws_iam_role" "lambda_execution_role" {
@@ -42,12 +45,12 @@ resource "aws_iam_role" "lambda_execution_role" {
 
   assume_role_policy = data.aws_iam_policy_document.lambda_execution_role_assume_role_policy_document.json
   path               = "/service/"
-  description        = "${var.subdomain_name}.${var.domain_name} - Basic Auth @Edge Lambda Execution Role"
+  description        = "${local.fqdn} - Basic Auth @Edge Lambda Execution Role"
 }
 
 locals {
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  lambda_execution_role_policy_name = "${var.subdomain_name}.${var.domain_name}---lambda_execution_role_policy_document"
+  lambda_execution_role_policy_name = "${local.fqdn_for_naming}---lambda_execution_role_policy_document"
 }
 
 resource "aws_iam_role_policy" "lambda_execution_role_policy" {
@@ -61,7 +64,7 @@ resource "aws_iam_role_policy" "lambda_execution_role_policy" {
 }
 
 locals {
-  basic_auth_at_edge_lambda_package_output_path = "${var.lambda_at_edge_code_artefacts_directory}/${var.subdomain_name}.${var.domain_name}---${var.lambda_at_edge_code_package_name}.zip"
+  basic_auth_at_edge_lambda_package_output_path = "${var.lambda_at_edge_code_artefacts_directory}/${local.fqdn}---${var.lambda_at_edge_code_package_name}.zip"
 
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
   basic_auth_at_edge_lambda_function_name = "${var.subdomain_name}-${replace(var.domain_name, ".", "-")}---BasicAuthAtEdgeLambda-${random_string.tiny.result}"
@@ -69,7 +72,7 @@ locals {
 
 data "archive_file" "basic_auth_at_edge_lambda_package" {
   type        = "zip"
-  source_dir  = "${path.root}/lambda-at-edge-code/${var.subdomain_name}.${var.domain_name}/"
+  source_dir  = "${path.root}/lambda-at-edge-code/${local.fqdn}/"
   output_path = local.basic_auth_at_edge_lambda_package_output_path
 }
 
@@ -84,14 +87,14 @@ resource "aws_lambda_function" "basic_auth_at_edge_lambda" {
   handler          = "index.handler"
   source_code_hash = data.archive_file.basic_auth_at_edge_lambda_package.output_base64sha256
   runtime          = "nodejs12.x"
-  description      = "${var.subdomain_name}.${var.domain_name} - Basic Auth @Edge Lambda"
+  description      = "${local.fqdn} - Basic Auth @Edge Lambda"
   memory_size      = 128
   timeout          = 1
   publish          = true
 
   tags = {
     terraform                               = "true"
-    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
+    servless-static-website-with-basic-auth = "${local.fqdn}"
   }
 }
 
@@ -118,14 +121,14 @@ resource "aws_s3_bucket" "serverless_website_bucket" {
 
   tags = {
     terraform                               = "true"
-    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
+    servless-static-website-with-basic-auth = "${local.fqdn}"
   }
 
   force_destroy = true
 }
 
 resource "aws_cloudfront_origin_access_identity" "cloudfront_origin_access_identity" {
-  comment = "${var.subdomain_name}.${var.domain_name} - Origin Access Identity for Serverless Static Website with Basic Auth"
+  comment = "${local.fqdn} - Origin Access Identity for Serverless Static Website with Basic Auth"
 }
 
 data "aws_iam_policy_document" "serverless_website_bucket_policy" {
@@ -203,7 +206,7 @@ resource "aws_s3_bucket_policy" "serverless_website_bucket_policy" {
 }
 
 resource "aws_cloudfront_distribution" "serverless_website_distribution" {
-  aliases = ["${var.subdomain_name}.${var.domain_name}"]
+  aliases = ["${local.fqdn}"]
 
   origin {
     domain_name = aws_s3_bucket.serverless_website_bucket.bucket_domain_name
@@ -217,12 +220,12 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
   logging_config {
     bucket = var.log_bucket_domain_name
 
-    prefix          = "${var.subdomain_name}.${var.domain_name}/"
+    prefix          = "${local.fqdn}/"
     include_cookies = true
   }
 
   enabled             = true
-  comment             = "${var.subdomain_name}.${var.domain_name} - Serverless Static Website with Basic Auth from S3 Origin"
+  comment             = "${local.fqdn} - Serverless Static Website with Basic Auth from S3 Origin"
   default_root_object = "index.html"
 
   default_cache_behavior {
@@ -273,13 +276,13 @@ resource "aws_cloudfront_distribution" "serverless_website_distribution" {
 
   tags = {
     terraform                               = "true"
-    servless-static-website-with-basic-auth = "${var.subdomain_name}.${var.domain_name}"
+    servless-static-website-with-basic-auth = "${local.fqdn}"
   }
 }
 
 resource "aws_route53_record" "serverless_website_recordset_group" {
   zone_id = var.hosted_zone_id
-  name    = "${var.subdomain_name}.${var.domain_name}"
+  name    = "${local.fqdn}"
   type    = "A"
 
   alias {
@@ -323,11 +326,11 @@ data "aws_iam_policy_document" "serverless_website_administrator_user_policy_doc
 
 locals {
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  serverless_website_administrator_user_policy_name = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministratorUserPolicy"
+  serverless_website_administrator_user_policy_name = "${local.fqdn_for_naming}---ServerlessWebsiteAdministratorUserPolicy"
 }
 
 resource "aws_iam_policy" "serverless_website_administrator_user_policy" {
-  description = "${var.subdomain_name}.${var.domain_name} - Policy for uploading objects to S3 bucket and invalidating CloudFront distribution"
+  description = "${local.fqdn} - Policy for uploading objects to S3 bucket and invalidating CloudFront distribution"
   name = substr(
     local.serverless_website_administrator_user_policy_name,
     0,
@@ -342,7 +345,7 @@ resource "aws_iam_policy" "serverless_website_administrator_user_policy" {
 
 locals {
   # Workaround for https://github.com/hashicorp/terraform/issues/15751
-  serverless_website_administrator_user_name = "${var.subdomain_name}.${var.domain_name}---ServerlessWebsiteAdministrator"
+  serverless_website_administrator_user_name = "${local.fqdn_for_naming}---ServerlessWebsiteAdministrator"
 }
 
 resource "aws_iam_user" "serverless_website_administrator_user" {
