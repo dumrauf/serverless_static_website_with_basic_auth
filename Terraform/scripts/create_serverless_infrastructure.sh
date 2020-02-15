@@ -27,7 +27,6 @@ fi
 
 # Terraform Commands
 terraform init
-terraform plan -var-file=settings/"${WORKSPACE}".tfvars
 terraform apply -var-file=settings/"${WORKSPACE}".tfvars
 
 popd > /dev/null
