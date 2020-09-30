@@ -1,4 +1,4 @@
-# Serverless Static Website With Basic Authentication
+# Serverless Static Website With Basic Authentication- please give review
 
 
 This repository contains a collection of Bash scripts and a choice of either a Terraform module or a set of CloudFormation templates that build a serverless infrastructure in AWS to host a static website protected with [Basic Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
