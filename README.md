@@ -7,7 +7,19 @@ The static website is published on a subdomain registered in Route 53.
 > A live example can be found at [https://serverless-static-website-with-basic-auth.dumrauf.uk/](https://serverless-static-website-with-basic-auth.dumrauf.uk/?utm_source=GitHub&utm_medium=social&utm_campaign=README) using the demo username `guest` and password [`letmein`](https://www.theguardian.com/technology/2016/jan/20/123456-worst-passwords-revealed).
 > Note that access to the underlying [S3 bucket](https://us-east-1-serverless-webs-serverlesswebsitebucket-1mtsv4odbs2x0.s3.amazonaws.com) hosting the static website is denied.
 
-The master branch in this repository is compliant with [Terraform v0.12](https://www.terraform.io/upgrade-guides/0-12.html); a legacy version that is compatible with [Terraform v0.11](https://www.terraform.io/upgrade-guides/0-11.html) is available on branch [terraform@0.11](https://github.com/dumrauf/serverless_static_website_with_basic_auth/tree/terraform%400.11).
+The master branch in this repository is compliant with [Terraform >= v0.13](https://www.terraform.io/language/v1.1.x/upgrade-guides/0-13); a legacy version that is compatible with [Terraform v0.11](https://www.terraform.io/upgrade-guides/0-11.html) is available on branch [terraform@0.11](https://github.com/dumrauf/serverless_static_website_with_basic_auth/tree/terraform%400.11).
+
+> **Note**
+> Upgrading from `v0.12` to later versions
+
+Due to changes in the AWS provider, if you have existing state from <= `v0.12` and are upgrading to >= `v0.13` the following will achieve that:
+
+```shell
+terraform state replace-provider -- -/random hashicorp/random
+terraform state replace-provider -- -/archive hashicorp/archive
+terraform state replace-provider -- -/aws hashicorp/aws
+terraform init
+```
 
 ## You Have
 
